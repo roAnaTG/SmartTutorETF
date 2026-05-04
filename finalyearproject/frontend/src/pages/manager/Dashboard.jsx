@@ -1,7 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { coursesAPI, applicationsAPI } from '../../services/api';
-import { HiBookOpen, HiClipboardCheck, HiUserGroup, HiPlus } from 'react-icons/hi';
+import { HiBookOpen, HiClipboardCheck, HiUserGroup, HiPlus, HiArrowRight, HiLightningBolt, HiCheckCircle, HiXCircle } from 'react-icons/hi';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
 
 const ManagerDashboard = () => {
   const [courses, setCourses] = useState([]);
@@ -40,7 +56,7 @@ const ManagerDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -49,179 +65,118 @@ const ManagerDashboard = () => {
   const openVacancies = courses.filter(c => c.tutorVacancy?.isOpen);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Manager Dashboard</h1>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-10"
+    >
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Operations <span className="text-blue-600">Center</span></h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2 mt-2">
+            <HiLightningBolt className="text-amber-500" />
+            Manage curriculum and tutor talent.
+          </p>
+        </div>
         <Link
           to="/courses"
-          className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+          className="btn-premium"
         >
-          <HiPlus className="h-5 w-5 mr-2" />
-          Create Course
+          <HiPlus className="h-5 w-5" />
+          Create New Course
         </Link>
-      </div>
+      </header>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
-              <HiBookOpen className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+        {[
+          { label: 'Managed Courses', value: courses.length, icon: HiBookOpen, color: 'blue' },
+          { label: 'Active Vacancies', value: openVacancies.length, icon: HiUserGroup, color: 'emerald' },
+          { label: 'Pending Hires', value: pendingApplications.length, icon: HiClipboardCheck, color: 'amber' },
+          { label: 'Total Enrolled', value: '1.2k', icon: HiUserGroup, color: 'violet' }
+        ].map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            variants={itemVariants}
+            className="premium-card group hover:scale-[1.02]"
+          >
+            <div className={`w-14 h-14 rounded-2xl bg-${stat.color}-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+              <stat.icon className={`h-7 w-7 text-${stat.color}-500`} />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Courses</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{courses.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900">
-              <HiUserGroup className="h-6 w-6 text-green-600 dark:text-green-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Open Vacancies</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{openVacancies.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
-              <HiClipboardCheck className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Applications</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{pendingApplications.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
-              <HiBookOpen className="h-6 w-6 text-purple-600 dark:text-purple-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Assigned Courses</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {courses.filter(c => c.assignedTutor).length}
-              </p>
-            </div>
-          </div>
-        </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
+            <h3 className="text-3xl font-black text-slate-900 dark:text-white mt-1">{stat.value}</h3>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Pending Applications */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Tutor Applications</h2>
-          <Link to="/applications" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-            View all
-          </Link>
-        </div>
-
-        {pendingApplications.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-            No pending applications
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead>
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Tutor
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Course
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Experience
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Applied
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {pendingApplications.map((app) => (
-                  <tr key={app._id}>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {app.tutor?.firstName} {app.tutor?.lastName}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {app.course?.title}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                      {app.experience}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(app.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm space-x-2">
-                      <button
-                        onClick={() => handleReviewApplication(app._id, 'approved')}
-                        className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-md hover:bg-green-200 dark:hover:bg-green-800"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => {
-                          const reason = prompt('Rejection reason:');
-                          if (reason) handleReviewApplication(app._id, 'rejected', reason);
-                        }}
-                        className="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 rounded-md hover:bg-red-200 dark:hover:bg-red-800"
-                      >
-                        Reject
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Tutor Applications */}
+        <motion.div variants={itemVariants} className="lg:col-span-2 premium-card">
+          <div className="flex justify-between items-center mb-10">
+            <div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">Talent Acquisition</h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Review tutor applications</p>
+            </div>
+            <Link to="/applications" className="text-xs font-black text-blue-600 hover:underline uppercase tracking-widest">Review All</Link>
           </div>
-        )}
-      </div>
+          <div className="space-y-6">
+            {pendingApplications.length > 0 ? pendingApplications.slice(0, 5).map((app) => (
+              <div key={app._id} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-all group border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">
+                    {app.user?.firstName?.[0]}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white">{app.user?.firstName} {app.user?.lastName}</h4>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Applying for: {app.course?.title}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => handleReviewApplication(app._id, 'approved')}
+                    className="flex-1 md:flex-none py-2 px-6 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-500/20"
+                  >
+                    Approve
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const reason = prompt('Rejection reason:');
+                      if (reason) handleReviewApplication(app._id, 'rejected', reason);
+                    }}
+                    className="flex-1 md:flex-none py-2 px-6 bg-rose-500/10 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-600 hover:text-white transition-all"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            )) : (
+              <div className="text-center py-20 text-slate-400 font-bold">No applications to review</div>
+            )}
+          </div>
+        </motion.div>
 
-      {/* My Courses */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">My Courses</h2>
-          <Link to="/courses" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courses.slice(0, 6).map((course) => (
-            <div key={course._id} className="border dark:border-gray-700 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 dark:text-white">{course.title}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{course.category}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  course.assignedTutor 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-                }`}>
-                  {course.assignedTutor ? 'Assigned' : 'No Tutor'}
-                </span>
-                <Link
-                  to={`/courses/${course._id}`}
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                >
-                  Manage
+        {/* Current Vacancies */}
+        <motion.div variants={itemVariants} className="premium-card">
+          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-8">Open Vacancies</h3>
+          <div className="space-y-4">
+            {openVacancies.length > 0 ? openVacancies.slice(0, 5).map((course) => (
+              <div key={course._id} className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between group">
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{course.title}</h4>
+                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mt-1">Tutor Needed</p>
+                </div>
+                <Link to={`/courses/${course._id}`} className="p-2 rounded-xl bg-white dark:bg-slate-700 text-slate-400 hover:text-blue-600 transition-colors">
+                  <HiArrowRight className="h-4 w-4" />
                 </Link>
               </div>
-            </div>
-          ))}
-        </div>
+            )) : (
+              <div className="text-center py-10 text-slate-400 font-bold">No open vacancies</div>
+            )}
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

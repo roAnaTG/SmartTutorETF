@@ -38,7 +38,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -54,23 +54,24 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-// Dashboard Router
-const DashboardRouter = () => {
+// Dashboard Router Component
+const DashboardSwitcher = () => {
   const { user } = useAuth();
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   switch (user.role) {
-    case 'student':
-      return <StudentDashboard />;
-    case 'tutor':
-      return <TutorDashboard />;
-    case 'admin':
-      return <AdminDashboard />;
-    case 'manager':
-      return <ManagerDashboard />;
-    default:
-      return <Navigate to="/login" replace />;
+    case 'student': return <StudentDashboard />;
+    case 'tutor': return <TutorDashboard />;
+    case 'admin': return <AdminDashboard />;
+    case 'manager': return <ManagerDashboard />;
+    default: return <Navigate to="/login" replace />;
   }
 };
 
@@ -108,7 +109,11 @@ function App() {
 
             {/* Protected Routes */}
             <Route element={<MainLayout />}>
-              <Route path="/dashboard" element={<DashboardRouter />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <DashboardSwitcher />
+                </ProtectedRoute>
+              } />
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/:id" element={<CourseDetail />} />
               <Route path="/my-courses" element={

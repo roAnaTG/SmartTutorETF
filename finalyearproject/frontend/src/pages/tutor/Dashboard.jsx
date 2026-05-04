@@ -1,212 +1,186 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { coursesAPI, progressAPI, applicationsAPI } from '../../services/api';
-import { HiBookOpen, HiUsers, HiClipboardCheck, HiTrendingUp } from 'react-icons/hi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { coursesAPI, progressAPI, sessionsAPI } from '../../services/api';
+import { 
+  HiBookOpen, HiUsers, HiTrendingUp, HiPlus, HiCalendar, 
+  HiLightningBolt, HiChevronRight, HiCollection, HiBriefcase,
+  HiClipboardCheck, HiSparkles, HiClock
+} from 'react-icons/hi';
+import toast from 'react-hot-toast';
 
 const TutorDashboard = () => {
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState({
+    totalCourses: 0,
+    totalStudents: 0,
+    averageProgress: 0,
+    activeStudents: 0
+  });
   const [courses, setCourses] = useState([]);
-  const [applications, setApplications] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [statsRes, coursesRes, sessionsRes] = await Promise.allSettled([
+          progressAPI.getTutorStats(),
+          coursesAPI.getTutorCourses(),
+          sessionsAPI.getAll({ upcoming: 'true' })
+        ]);
+
+        if (statsRes.status === 'fulfilled') setStats(statsRes.value?.data || stats);
+        if (coursesRes.status === 'fulfilled') setCourses(coursesRes.value?.data || []);
+        if (sessionsRes.status === 'fulfilled') setSessions(Array.isArray(sessionsRes.value?.data) ? sessionsRes.value.data.slice(0, 3) : []);
+        
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+        toast.error('Partial data load');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboardData();
   }, []);
 
-  const fetchDashboardData = async () => {
-    try {
-      const [statsRes, coursesRes, appsRes] = await Promise.all([
-        progressAPI.getTutorStats(),
-        coursesAPI.getTutorCourses(),
-        applicationsAPI.getAll()
-      ]);
-
-      setStats(statsRes.data);
-      setCourses(coursesRes.data);
-      setApplications(appsRes.data.slice(0, 5));
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+        <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Syncing Command Center...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tutor Dashboard</h1>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-12 pb-20"
+    >
+      {/* 🌌 Cyber-Glass Header */}
+      <header className="relative p-10 rounded-[3rem] bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] -mr-64 -mt-64 animate-pulse"></div>
+        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 text-white">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></div>
+              <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">System Active</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-none">
+              Control <span className="text-blue-500">Panel</span>
+            </h1>
+            <p className="text-slate-400 font-medium text-lg max-w-xl">
+              Precision metrics and academic management for the digital frontier.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap gap-4">
+            <Link to="/lessons" className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-600/20 flex items-center gap-3 group">
+              <HiPlus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
+              CREATE MODULE
+            </Link>
+          </div>
+        </div>
+      </header>
 
-      {/* Stats Cards */}
+      {/* 📊 High-Definition Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
-              <HiBookOpen className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+        {[
+          { label: 'Active Cohorts', value: stats.totalCourses, icon: HiCollection },
+          { label: 'Student Reach', value: stats.totalStudents, icon: HiUsers },
+          { label: 'Engagement Index', value: `${stats.averageProgress}%`, icon: HiTrendingUp },
+          { label: 'Retained Activity', value: stats.activeStudents, icon: HiLightningBolt }
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group">
+            <div className="flex items-start justify-between mb-6">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                <stat.icon className="h-6 w-6" />
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Assigned Courses</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {stats?.totalCourses || 0}
-              </p>
-            </div>
+            <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{stat.value}</h3>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">{stat.label}</p>
           </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900">
-              <HiUsers className="h-6 w-6 text-green-600 dark:text-green-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Students</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {stats?.totalStudents || 0}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
-              <HiTrendingUp className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Progress</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {stats?.averageProgress || 0}%
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
-              <HiClipboardCheck className="h-6 w-6 text-purple-600 dark:text-purple-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Students</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {stats?.activeStudents || 0}
-              </p>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* My Courses */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">My Assigned Courses</h2>
-          <Link to="/my-courses" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courses.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 col-span-3 text-center py-8">
-              No courses assigned yet. Apply to courses to get started.
-            </p>
-          ) : (
-            courses.map((course) => (
-              <div key={course._id} className="border dark:border-gray-700 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 dark:text-white">{course.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{course.category}</p>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {course.enrolledStudents?.length || 0} students
-                  </span>
-                  <Link
-                    to={`/courses/${course._id}`}
-                    className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                  >
-                    Manage
-                  </Link>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* 📚 Curriculum Nexus */}
+        <div className="lg:col-span-8 bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white">Curriculum <span className="text-blue-600">Nexus</span></h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Live management of assigned courses</p>
+            </div>
+            <Link to="/my-courses" className="text-xs font-black text-blue-600 flex items-center gap-1 hover:gap-2 transition-all">
+              FULL ARCHIVE <HiChevronRight />
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {courses.length > 0 ? courses.map((course) => (
+              <div key={course._id} className="p-6 rounded-[2rem] bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-600 group transition-all">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="h-12 w-12 rounded-xl bg-white dark:bg-slate-900 shadow-lg flex items-center justify-center text-xl font-black text-blue-600 group-hover:scale-110 transition-transform">
+                    {course.title[0]}
+                  </div>
+                </div>
+                <h4 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-white mb-2 truncate">{course.title}</h4>
+                <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 group-hover:text-white/60 uppercase tracking-widest">
+                  <span className="flex items-center gap-1.5"><HiUsers /> {course.enrolledStudents?.length || 0} enrolled</span>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link
-            to="/lessons"
-            className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-          >
-            <HiBookOpen className="h-8 w-8 text-primary-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Upload Lesson</span>
-          </Link>
-          <Link
-            to="/sessions"
-            className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-          >
-            <HiUsers className="h-8 w-8 text-primary-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Schedule Session</span>
-          </Link>
-          <Link
-            to="/groups"
-            className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-          >
-            <HiUsers className="h-8 w-8 text-primary-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Create Group</span>
-          </Link>
-          <Link
-            to="/assessments"
-            className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-          >
-            <HiClipboardCheck className="h-8 w-8 text-primary-600 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Create Assessment</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Recent Applications */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">My Applications</h2>
-          <Link to="/applications" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-            View all
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {applications.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-              No applications yet. Apply to courses to start teaching.
-            </p>
-          ) : (
-            applications.map((app) => (
-              <div key={app._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{app.course?.title}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Applied: {new Date(app.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  app.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                  app.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                }`}>
-                  {app.status}
-                </span>
+            )) : (
+              <div className="col-span-full text-center py-20 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-700">
+                <HiBriefcase className="h-12 w-12 text-slate-200 mx-auto mb-4" />
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No active assignments found</p>
               </div>
-            ))
-          )}
+            )}
+          </div>
+        </div>
+
+        {/* ⚡ Quick Pulse Feed */}
+        <div className="lg:col-span-4 flex flex-col gap-8">
+          <div className="bg-slate-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden flex-1">
+            <h3 className="text-xl font-black mb-10 flex items-center gap-3">
+              <HiSparkles className="text-blue-500" /> Pulse <span className="text-blue-500">Feed</span>
+            </h3>
+            
+            <div className="space-y-6">
+              {sessions.length > 0 ? sessions.map((session) => (
+                <div key={session._id} className="flex gap-4 group">
+                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-xs font-black">{new Date(session.scheduledAt).getDate()}</span>
+                    <span className="text-[7px] font-black uppercase">{new Date(session.scheduledAt).toLocaleDateString([], { month: 'short' })}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-black truncate group-hover:text-blue-400 transition-colors">{session.title}</h4>
+                    <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{session.type}</p>
+                  </div>
+                </div>
+              )) : (
+                <div className="text-center py-10 opacity-40">
+                  <HiClock className="h-10 w-10 mx-auto mb-4" />
+                  <p className="text-[10px] font-black uppercase tracking-widest">Quiet on the front</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm grid grid-cols-2 gap-4">
+             <Link to="/assessments" className="p-5 bg-slate-50 dark:bg-slate-800 rounded-3xl flex flex-col items-center justify-center gap-3 hover:bg-blue-600 group transition-all">
+                <HiClipboardCheck className="h-6 w-6 text-blue-600 group-hover:text-white" />
+                <span className="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest text-center">Build Quiz</span>
+             </Link>
+             <Link to="/groups" className="p-5 bg-slate-50 dark:bg-slate-800 rounded-3xl flex flex-col items-center justify-center gap-3 hover:bg-indigo-600 group transition-all">
+                <HiUsers className="h-6 w-6 text-indigo-600 group-hover:text-white" />
+                <span className="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest text-center">Cohorts</span>
+             </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

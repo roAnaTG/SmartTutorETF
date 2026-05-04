@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { coursesAPI, progressAPI, paymentsAPI, notificationsAPI } from '../../services/api';
+import { motion } from 'framer-motion';
+import { coursesAPI, progressAPI, paymentsAPI } from '../../services/api';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -10,9 +11,10 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 } from 'chart.js';
-import { HiBookOpen, HiAcademicCap, HiClock, HiTrendingUp } from 'react-icons/hi';
+import { HiBookOpen, HiAcademicCap, HiClock, HiTrendingUp, HiChevronRight, HiLightningBolt } from 'react-icons/hi';
 
 ChartJS.register(
   CategoryScale,
@@ -21,8 +23,22 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
 
 const StudentDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -55,151 +71,133 @@ const StudentDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   const progressData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
-        label: 'Progress %',
-        data: [25, 45, 60, stats?.averageProgress || 0],
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.5)',
-        tension: 0.4
+        label: 'Learning Hours',
+        data: [1.5, 2.3, 1.8, 3.5, 2.0, 4.2, 3.0],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
       }
     ]
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Student Dashboard</h1>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-10"
+    >
+      {/* Header Section */}
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+            Learning <span className="text-blue-600">Overview</span>
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
+            <HiLightningBolt className="text-amber-500" />
+            Keep up the great work! You've completed 85% of your weekly goal.
+          </p>
+        </div>
+        <Link 
+          to="/courses" 
+          className="btn-premium"
+        >
+          Explore New Courses
+          <HiChevronRight className="h-5 w-5" />
+        </Link>
+      </motion.div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
-              <HiBookOpen className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+      {/* Quick Stats Grid */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Active Courses', value: stats?.activeCourses || 0, icon: HiBookOpen, color: 'blue' },
+          { label: 'Completed', value: stats?.completedCourses || 0, icon: HiAcademicCap, color: 'emerald' },
+          { label: 'Study Hours', value: '24.5h', icon: HiClock, color: 'violet' },
+          { label: 'Knowledge Score', value: '92%', icon: HiTrendingUp, color: 'rose' }
+        ].map((stat, i) => (
+          <div key={i} className="premium-card group hover:scale-[1.02]">
+            <div className={`w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+              <stat.icon className={`h-7 w-7 text-blue-500`} />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Enrolled Courses</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {stats?.totalCourses || 0}
-              </p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
+            <h3 className="text-3xl font-black text-slate-900 dark:text-white mt-1">{stat.value}</h3>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <stat.icon className="h-20 w-20 rotate-12" />
             </div>
           </div>
-        </div>
+        ))}
+      </motion.div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900">
-              <HiAcademicCap className="h-6 w-6 text-green-600 dark:text-green-300" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Learning Activity Chart */}
+        <motion.div variants={itemVariants} className="lg:col-span-2 premium-card">
+          <div className="flex justify-between items-center mb-10">
+            <div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">Activity Pulse</h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Weekly Learning Intensity</p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Completed</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {stats?.completedCourses || 0}
-              </p>
-            </div>
+            <select className="bg-slate-50 dark:bg-slate-800 border-0 rounded-xl px-4 py-2 text-xs font-bold focus:ring-2 focus:ring-blue-500">
+              <option>Last 7 Days</option>
+              <option>Last 30 Days</option>
+            </select>
           </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
-              <HiTrendingUp className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Progress</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {stats?.averageProgress || 0}%
-              </p>
-            </div>
+          <div className="h-[300px]">
+            <Line data={progressData} options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: true, grid: { display: false }, ticks: { font: { weight: 'bold' } } },
+                x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
+              }
+            }} />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
-              <HiClock className="h-6 w-6 text-purple-600 dark:text-purple-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Time Spent</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {Math.round((stats?.totalTimeSpent || 0) / 60)}h
-              </p>
-            </div>
+        {/* Recent Courses */}
+        <motion.div variants={itemVariants} className="premium-card">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white">Jump Back In</h3>
+            <Link to="/my-courses" className="text-xs font-black text-blue-600 hover:underline uppercase tracking-widest">View All</Link>
           </div>
-        </div>
-      </div>
-
-      {/* Progress Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning Progress</h2>
-        <Line data={progressData} options={{ responsive: true, maintainAspectRatio: false }} />
-      </div>
-
-      {/* Recent Courses */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">My Courses</h2>
-          <Link to="/my-courses" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {recentCourses.map((course) => (
-            <div key={course._id} className="border dark:border-gray-700 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 dark:text-white">{course.title}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{course.category}</p>
-              <div className="mt-3">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600 dark:text-gray-400">Progress</span>
-                  <span className="text-gray-900 dark:text-white font-medium">0%</span>
+          <div className="space-y-4">
+            {recentCourses.length > 0 ? recentCourses.map((course) => (
+              <Link 
+                key={course._id} 
+                to={`/courses/${course._id}`}
+                className="flex items-center gap-4 p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700 shadow-sm hover:shadow-md group"
+              >
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-200">
+                  <img src={course.thumbnail || 'https://via.placeholder.com/150'} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div className="bg-primary-600 h-2 rounded-full" style={{ width: '0%' }}></div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{course.title}</h4>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-2">
+                    <div className="bg-blue-600 h-full rounded-full" style={{ width: '45%' }} />
+                  </div>
                 </div>
+              </Link>
+            )) : (
+              <div className="text-center py-10 opacity-50">
+                <p className="text-sm font-bold">No courses yet</p>
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        </motion.div>
       </div>
-
-      {/* Payment Status */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Payments</h2>
-          <Link to="/payments" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-            View all
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {payments.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">No payments yet</p>
-          ) : (
-            payments.map((payment) => (
-              <div key={payment._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{payment.course?.title}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">${payment.amount}</p>
-                </div>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  payment.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                  payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                }`}>
-                  {payment.status}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
+    </motion.div>
   );
 };
 

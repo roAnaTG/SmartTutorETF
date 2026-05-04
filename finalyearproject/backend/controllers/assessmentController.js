@@ -23,8 +23,10 @@ const createAssessment = async (req, res) => {
       });
     }
 
-    // Calculate total points
-    const totalPoints = questions.reduce((sum, q) => sum + (q.points || 1), 0);
+    // Calculate total points safely
+    const totalPoints = questions && Array.isArray(questions) 
+      ? questions.reduce((sum, q) => sum + (Number(q.points) || 1), 0)
+      : req.body.totalPoints || 0;
 
     const assessment = new Assessment({
       course: courseId,
@@ -33,9 +35,9 @@ const createAssessment = async (req, res) => {
       title,
       description,
       type,
-      questions,
+      questions: questions || [],
       totalPoints,
-      timeLimit,
+      timeLimit: timeLimit || 30,
       dueDate
     });
 

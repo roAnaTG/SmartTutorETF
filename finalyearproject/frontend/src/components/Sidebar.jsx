@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   HiHome, 
   HiBookOpen, 
@@ -11,10 +12,11 @@ import {
   HiDocumentText,
   HiChartBar,
   HiUsers,
-  HiLogout
+  HiLogout,
+  HiChevronRight
 } from 'react-icons/hi';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -24,6 +26,7 @@ const Sidebar = () => {
   };
 
   const getNavItems = () => {
+    // ... existing logic ...
     const commonItems = [
       { name: 'Dashboard', path: '/dashboard', icon: HiHome },
       { name: 'Courses', path: '/courses', icon: HiBookOpen },
@@ -70,61 +73,94 @@ const Sidebar = () => {
   const navItems = getNavItems();
 
   return (
-    <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex flex-col flex-grow bg-white dark:bg-gray-800 pt-5 pb-4 overflow-y-auto border-r border-gray-200 dark:border-gray-700">
-        <div className="flex items-center flex-shrink-0 px-4">
-          <h1 className="text-2xl font-bold text-primary-600">SmartTutorET</h1>
-        </div>
-        
-        <div className="mt-8 flex-1 flex flex-col">
-          <nav className="flex-1 px-2 space-y-1">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
-                    isActive
-                      ? 'bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-300'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`
-                }
-              >
-                <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                {item.name}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-
-        <div className="flex-shrink-0 flex border-t border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex-shrink-0 w-full group block">
-            <div className="flex items-center">
-              <div className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-primary-600">
-                <span className="text-sm font-medium text-white">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
-                </span>
+    <AnimatePresence>
+      {(isOpen || window.innerWidth >= 1024) && (
+        <motion.div 
+          initial={{ x: -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -300, opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col p-4 transition-all duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        >
+          <div className="flex flex-col flex-grow glass dark:bg-slate-900/80 rounded-[2.5rem] border-0 shadow-2xl overflow-hidden backdrop-blur-xl">
+            <div className="px-8 pt-10 pb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30">
+                  <HiAcademicCap className="h-6 w-6 text-white" />
+                </div>
+                <h1 className="text-xl font-black tracking-tighter text-slate-900 dark:text-white">
+                  SmartTutor<span className="text-blue-600">ET</span>
+                </h1>
               </div>
-              <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                  {user?.role}
-                </p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="ml-2 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                title="Logout"
-              >
-                <HiLogout className="h-5 w-5" />
+              <button onClick={onClose} className="p-2 lg:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                <HiChevronRight className="h-6 w-6 rotate-180" />
               </button>
             </div>
+            
+            <div className="mt-6 flex-1 flex flex-col px-4 overflow-y-auto custom-scrollbar">
+              <nav className="flex-1 space-y-2 pb-8">
+                {navItems.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => window.innerWidth < 1024 && onClose()}
+                    className={({ isActive }) =>
+                      `group relative flex items-center px-4 py-3.5 text-sm font-bold rounded-2xl transition-all ${
+                        isActive
+                          ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/25'
+                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <item.icon className={`mr-3 h-5 w-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600 transition-colors'}`} />
+                        <span className="flex-1">{item.name}</span>
+                        {isActive && (
+                          <motion.div 
+                            layoutId="activeTab"
+                            className="absolute right-4"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                          >
+                            <HiChevronRight className="h-4 w-4" />
+                          </motion.div>
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
+
+            <div className="p-4 mt-auto">
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700/50">
+                <div className="flex items-center mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
+                    {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  </div>
+                  <div className="ml-3 overflow-hidden">
+                    <p className="text-xs font-black text-slate-900 dark:text-white truncate">
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-0.5">
+                      {user?.role}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-black text-rose-600 bg-rose-500/10 hover:bg-rose-600 hover:text-white rounded-xl transition-all uppercase tracking-widest"
+                >
+                  <HiLogout className="h-4 w-4" />
+                  Sign Out
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

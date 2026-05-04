@@ -1,7 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { paymentsAPI } from '../../services/api';
-import { HiCreditCard, HiCheckCircle, HiXCircle, HiClock } from 'react-icons/hi';
+import { HiCreditCard, HiCheckCircle, HiXCircle, HiClock, HiCurrencyDollar, HiArrowRight, HiLightningBolt, HiTrendingUp } from 'react-icons/hi';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
 
 const AdminDashboard = () => {
   const [payments, setPayments] = useState([]);
@@ -48,7 +62,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -56,141 +70,133 @@ const AdminDashboard = () => {
   const pendingPayments = payments.filter(p => p.status === 'pending');
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-10"
+    >
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">System <span className="text-blue-600">Console</span></h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2 mt-2">
+            <HiLightningBolt className="text-amber-500" />
+            Platform overview and financial oversight.
+          </p>
+        </div>
+      </header>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
-              <HiCreditCard className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+        {[
+          { label: 'Total Volume', value: stats.total, icon: HiCreditCard, color: 'blue' },
+          { label: 'Pending Review', value: stats.pending, icon: HiClock, color: 'amber' },
+          { label: 'Approved', value: stats.approved, icon: HiCheckCircle, color: 'emerald' },
+          { label: 'Rejected', value: stats.rejected, icon: HiXCircle, color: 'rose' }
+        ].map((stat) => (
+          <motion.div
+            key={stat.label}
+            variants={itemVariants}
+            className="premium-card group hover:scale-[1.02]"
+          >
+            <div className={`w-14 h-14 rounded-2xl bg-${stat.color}-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+              <stat.icon className={`h-7 w-7 text-${stat.color}-500`} />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Payments</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.total}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
-              <HiClock className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.pending}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900">
-              <HiCheckCircle className="h-6 w-6 text-green-600 dark:text-green-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Approved</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.approved}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-red-100 dark:bg-red-900">
-              <HiXCircle className="h-6 w-6 text-red-600 dark:text-red-300" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Rejected</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.rejected}</p>
-            </div>
-          </div>
-        </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
+            <h3 className="text-3xl font-black text-slate-900 dark:text-white mt-1">{stat.value}</h3>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Pending Payments */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pending Payments</h2>
-          <Link to="/payments" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-            View all
-          </Link>
-        </div>
-
-        {pendingPayments.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-            No pending payments to review
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Pending Payments Table */}
+        <motion.div variants={itemVariants} className="lg:col-span-2 premium-card">
+          <div className="flex justify-between items-center mb-10">
+            <div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">Transaction Queue</h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Pending approval requests</p>
+            </div>
+            <Link to="/payments" className="btn-premium py-2 px-6 text-xs">Full Ledger</Link>
+          </div>
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left">
               <thead>
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Student
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Course
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Method
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
+                <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">
+                  <th className="pb-4 px-4">Entity</th>
+                  <th className="pb-4 px-4">Amount</th>
+                  <th className="pb-4 px-4">Status</th>
+                  <th className="pb-4 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {pendingPayments.map((payment) => (
-                  <tr key={payment._id}>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {payment.user?.firstName} {payment.user?.lastName}
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                {pendingPayments.length > 0 ? pendingPayments.slice(0, 5).map((payment) => (
+                  <tr key={payment._id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="py-6 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold">
+                          {payment.course?.title?.[0] || 'P'}
+                        </div>
+                        <span className="font-bold text-sm text-slate-900 dark:text-white">{payment.course?.title || 'Unknown'}</span>
+                      </div>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {payment.course?.title}
+                    <td className="py-6 px-4 font-black text-slate-900 dark:text-white">${payment.amount}</td>
+                    <td className="py-6 px-4">
+                      <span className="px-3 py-1 bg-amber-500/10 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-lg">Pending</span>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      ${payment.amount}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {payment.paymentMethod}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(payment.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm space-x-2">
-                      <button
-                        onClick={() => handleReview(payment._id, 'approved')}
-                        className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-md hover:bg-green-200 dark:hover:bg-green-800"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => {
-                          const reason = prompt('Rejection reason:');
-                          if (reason) handleReview(payment._id, 'rejected', reason);
-                        }}
-                        className="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 rounded-md hover:bg-red-200 dark:hover:bg-red-800"
-                      >
-                        Reject
-                      </button>
+                    <td className="py-6 px-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => handleReview(payment._id, 'approved')}
+                          className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-lg shadow-emerald-500/10"
+                        >
+                          <HiCheckCircle className="h-5 w-5" />
+                        </button>
+                        <button 
+                          onClick={() => {
+                            const reason = prompt('Rejection reason:');
+                            if (reason) handleReview(payment._id, 'rejected', reason);
+                          }}
+                          className="p-2 bg-rose-500/10 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-lg shadow-rose-500/10"
+                        >
+                          <HiXCircle className="h-5 w-5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="4" className="py-10 text-center text-slate-400 font-bold">No pending transactions</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
-        )}
+        </motion.div>
+
+        {/* System Activity */}
+        <motion.div variants={itemVariants} className="premium-card">
+          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-8">Revenue Stream</h3>
+          <div className="space-y-6">
+            {[
+              { label: 'Weekly Revenue', value: '$12,450', growth: '+12.5%', color: 'blue' },
+              { label: 'New Students', value: '142', growth: '+8.2%', color: 'emerald' },
+              { label: 'Active Sessions', value: '45', growth: '+4.1%', color: 'amber' }
+            ].map((metric, i) => (
+              <div key={i} className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 space-y-4">
+                <div className="flex justify-between items-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{metric.label}</p>
+                  <span className="flex items-center gap-1 text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                    <HiTrendingUp className="h-3 w-3" />
+                    {metric.growth}
+                  </span>
+                </div>
+                <h4 className="text-3xl font-black text-slate-900 dark:text-white">{metric.value}</h4>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
