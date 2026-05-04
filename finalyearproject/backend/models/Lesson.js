@@ -4,7 +4,7 @@ const lessonSchema = new mongoose.Schema({
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
-    required: true
+    required: false
   },
   tutor: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,6 +12,10 @@ const lessonSchema = new mongoose.Schema({
     required: true
   },
   title: {
+    type: String,
+    required: true
+  },
+  subject: {
     type: String,
     required: true
   },

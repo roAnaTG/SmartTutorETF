@@ -5,6 +5,7 @@ import { coursesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { HiSearch, HiFilter, HiPlus, HiBookOpen, HiUser, HiTag, HiX, HiClock, HiTrash } from 'react-icons/hi';
 import toast from 'react-hot-toast';
+import SubjectDropdown from '../components/common/SubjectDropdown';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -261,27 +262,13 @@ const Courses = () => {
                       placeholder="e.g. Advanced Mathematics"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Category</label>
-                    <select
+                  <div className="col-span-2">
+                    <SubjectDropdown
+                      label="Course Discipline"
                       required
                       value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white appearance-none font-medium"
-                    >
-                      <option value="">Select Subject</option>
-                      <option value="Mathematics">Mathematics</option>
-                      <option value="Physics">Physics</option>
-                      <option value="Chemistry">Chemistry</option>
-                      <option value="Biology">Biology</option>
-                      <option value="English">English</option>
-                      <option value="History">History</option>
-                      <option value="Geography">Geography</option>
-                      <option value="Economics">Economics</option>
-                      <option value="Computer Science">Computer Science</option>
-                      <option value="Art">Art</option>
-                      <option value="Literature">Literature</option>
-                    </select>
+                      onChange={(category) => setFormData({ ...formData, category })}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Level</label>

@@ -5,28 +5,31 @@ const Progress = require('../models/Progress');
 
 const createLesson = async (req, res) => {
   try {
-    const { course: courseId, title, description, week, order, videoUrl, duration, resources } = req.body;
+    const { course: courseId, title, subject, description, week, order, videoUrl, duration, resources } = req.body;
 
     // Verify tutor is assigned to this course
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Course not found' 
-      });
-    }
+    if (courseId) {
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Course not found' 
+        });
+      }
 
-    if (course.assignedTutor.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'You are not assigned to this course' 
-      });
+      if (course.assignedTutor.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You are not assigned to this course' 
+        });
+      }
     }
 
     const lesson = new Lesson({
       course: courseId,
       tutor: req.user._id,
       title,
+      subject,
       description,
       week,
       order,

@@ -6,28 +6,33 @@ const { sendEmail, emailTemplates } = require('../utils/email');
 
 const createSession = async (req, res) => {
   try {
-    const { course: courseId, title, description, type, scheduledAt, duration, group } = req.body;
+    const { course: courseId, title, subject, description, type, scheduledAt, duration, group } = req.body;
 
-    // Verify tutor is assigned to this course
-    const course = await Course.findById(courseId).populate('enrolledStudents', 'firstName lastName email');
-    if (!course) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Course not found' 
-      });
-    }
+    // Verify tutor is assigned to this course (only if courseId is provided)
+    let enrolledStudents = [];
+    if (courseId) {
+      const course = await Course.findById(courseId).populate('enrolledStudents', 'firstName lastName email');
+      if (!course) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Course not found' 
+        });
+      }
 
-    if (course.assignedTutor.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'You are not assigned to this course' 
-      });
+      if (course.assignedTutor.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You are not assigned to this course' 
+        });
+      }
+      enrolledStudents = course.enrolledStudents;
     }
 
     const session = new Session({
       course: courseId,
       tutor: req.user._id,
       title,
+      subject,
       description,
       type,
       scheduledAt,
@@ -45,7 +50,7 @@ const createSession = async (req, res) => {
     // Notify enrolled students
     const students = group 
       ? (await Group.findById(group).populate('students', 'firstName lastName email')).students
-      : course.enrolledStudents;
+      : enrolledStudents;
 
     for (const student of students) {
       // Create notification
@@ -53,7 +58,7 @@ const createSession = async (req, res) => {
         recipient: student._id,
         type: 'session-scheduled',
         title: 'New Session Scheduled',
-        message: `A new session "${title}" has been scheduled for ${course.title}`,
+        message: `A new session "${title}" has been scheduled${session.course ? ` for ${session.course.title}` : ` in ${subject}`}`,
         relatedId: session._id,
         relatedModel: 'Session'
       });

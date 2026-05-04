@@ -4,7 +4,7 @@ const groupSchema = new mongoose.Schema({
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
-    required: true
+    required: false
   },
   tutor: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,6 +12,10 @@ const groupSchema = new mongoose.Schema({
     required: true
   },
   name: {
+    type: String,
+    required: true
+  },
+  subject: {
     type: String,
     required: true
   },

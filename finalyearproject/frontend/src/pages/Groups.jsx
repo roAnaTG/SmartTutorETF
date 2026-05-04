@@ -1,22 +1,17 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { groupsAPI, coursesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { HiUserGroup, HiPlus, HiX, HiChevronRight, HiUsers, HiBookOpen, HiAnnotation, HiTrash } from 'react-icons/hi';
+import { 
+  HiUserGroup, HiPlus, HiChevronRight, HiUsers, 
+  HiBookOpen, HiTrash, HiTag, HiOutlineUserGroup 
+} from 'react-icons/hi';
 import toast from 'react-hot-toast';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-};
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
+import Input from '../components/common/Input';
+import Modal from '../components/common/Modal';
+import SubjectDropdown from '../components/common/SubjectDropdown';
 
 const Groups = () => {
   const [groups, setGroups] = useState([]);
@@ -27,6 +22,7 @@ const Groups = () => {
   
   const [formData, setFormData] = useState({
     name: '',
+    subject: '',
     description: '',
     course: '',
     maxMembers: 10
@@ -74,7 +70,7 @@ const Groups = () => {
       await groupsAPI.create(formData);
       toast.success('Study group created successfully!');
       setShowModal(false);
-      setFormData({ name: '', description: '', course: '', maxMembers: 10 });
+      setFormData({ name: '', subject: '', description: '', course: '', maxMembers: 10 });
       fetchGroups();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to create group');
@@ -83,196 +79,152 @@ const Groups = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600/20 border-t-blue-600"></div>
+        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Syncing Communities...</p>
       </div>
     );
   }
 
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-8"
-    >
+    <div className="space-y-10 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <motion.div variants={itemVariants}>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Study Communities</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Collaborate with peers in specialized study groups.</p>
-        </motion.div>
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Study <span className="text-blue-600">Communities</span></h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Collaborative hubs for peer-to-peer knowledge exchange.</p>
+        </div>
         {user?.role !== 'student' && (
-          <motion.button
-            variants={itemVariants}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25"
-          >
-            <HiPlus className="h-5 w-5 mr-2" />
-            Create Group
-          </motion.button>
+          <Button onClick={() => setShowModal(true)} icon={HiPlus}>
+            New Community
+          </Button>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {groups.length === 0 ? (
-          <div className="col-span-full text-center py-20 glass rounded-[2.5rem] border-dashed border-2">
-            <HiUserGroup className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">No active groups found.</p>
+          <div className="col-span-full py-32 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800/50 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-700">
+            <HiOutlineUserGroup className="h-16 w-16 text-slate-200 mb-6" />
+            <p className="text-slate-400 font-black uppercase tracking-widest text-xs">No active communities found</p>
           </div>
         ) : (
           groups.map((group) => (
-            <motion.div
-              key={group._id}
-              variants={itemVariants}
-              whileHover={{ y: -5 }}
-              className="glass p-8 rounded-[2.5rem] border-0 shadow-sm flex flex-col"
-            >
-              <div className="flex justify-between items-start mb-6">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                  <HiUserGroup className="h-7 w-7" />
+            <Card key={group._id} className="flex flex-col">
+              <div className="flex justify-between items-start mb-8">
+                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/20 transition-transform group-hover:scale-110">
+                  <HiUserGroup className="h-8 w-8" />
                 </div>
-                <div className="flex flex-col items-end">
-                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Capacity</span>
-                   <span className="text-sm font-bold text-slate-900 dark:text-white">
-                    {group.students?.length || 0} / {group.maxMembers}
-                   </span>
+                <div className="text-right">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Occupancy</p>
+                   <p className="text-lg font-black text-slate-900 dark:text-white leading-none mt-1">
+                    {group.students?.length || 0}<span className="text-slate-300 dark:text-slate-700">/</span>{group.maxMembers}
+                   </p>
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{group.name}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 mb-6">
-                {group.description}
-              </p>
+              <div className="space-y-4 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-blue-50 dark:bg-slate-800 text-blue-600 text-[10px] font-black rounded uppercase tracking-widest">
+                    {group.subject || 'General'}
+                  </span>
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                  {group.name}
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed">
+                  {group.description}
+                </p>
+              </div>
 
-              <div className="mt-auto space-y-4">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  <HiBookOpen className="text-blue-500" /> {group.course?.title}
+              <div className="mt-10 pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                <div className="flex -space-x-3">
+                  {group.students?.slice(0, 4).map((student, i) => (
+                    <div
+                      key={i}
+                      className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 flex items-center justify-center text-[10px] font-black text-slate-600"
+                      title={`${student.firstName}`}
+                    >
+                      {student.firstName?.[0]}
+                    </div>
+                  ))}
+                  {group.students?.length > 4 && (
+                    <div className="h-10 w-10 rounded-full bg-blue-600 border-4 border-white dark:border-slate-900 flex items-center justify-center text-[10px] font-black text-white">
+                      +{group.students.length - 4}
+                    </div>
+                  )}
                 </div>
                 
-                <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
-                  <div className="flex -space-x-2">
-                    {group.students?.slice(0, 4).map((student, i) => (
-                      <div
-                        key={i}
-                        className="h-9 w-9 rounded-full bg-slate-100 dark:bg-slate-700 border-4 border-white dark:border-slate-900 flex items-center justify-center text-[10px] font-black text-slate-600 dark:text-slate-300"
-                        title={`${student.firstName} ${student.lastName}`}
-                      >
-                        {student.firstName?.[0]}{student.lastName?.[0]}
-                      </div>
-                    ))}
-                    {group.students?.length > 4 && (
-                      <div className="h-9 w-9 rounded-full bg-blue-600 border-4 border-white dark:border-slate-900 flex items-center justify-center text-[10px] font-black text-white">
-                        +{group.students.length - 4}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {user?.role !== 'student' && (
-                      <button
-                        onClick={() => handleDelete(group._id)}
-                        className="p-3 bg-rose-500/10 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm"
-                        title="Delete Group"
-                      >
-                        <HiTrash className="h-5 w-5" />
-                      </button>
-                    )}
-                    <button className="p-3 bg-slate-50 dark:bg-slate-800 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm">
-                      <HiChevronRight className="h-5 w-5" />
-                    </button>
-                  </div>
+                <div className="flex gap-2">
+                  {user?.role !== 'student' && (
+                    <Button 
+                      variant="danger" 
+                      size="sm" 
+                      onClick={() => handleDelete(group._id)}
+                      className="rounded-xl p-3"
+                      icon={HiTrash}
+                    />
+                  )}
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="rounded-xl p-3"
+                    icon={HiChevronRight}
+                  />
                 </div>
               </div>
-            </motion.div>
+            </Card>
           ))
         )}
       </div>
 
-      {/* Create Modal */}
-      <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowModal(false)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+      <Modal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+        title="Establish Community Hub"
+        size="lg"
+      >
+        <form onSubmit={handleCreateGroup} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              label="Community Name"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. Quantum Computing Cohort A"
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden"
-            >
-              <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white">Create Study Group</h2>
-                <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">
-                  <HiX className="h-6 w-6 text-slate-500" />
-                </button>
-              </div>
-              <form onSubmit={handleCreateGroup} className="p-8 space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Group Name</label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                    placeholder="e.g. Advanced Calculus Study Cohort"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Associated Course</label>
-                    <select
-                      required
-                      value={formData.course}
-                      onChange={(e) => setFormData({ ...formData, course: e.target.value })}
-                      className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white appearance-none"
-                    >
-                      <option value="">Select Course</option>
-                      {courses.map(c => (
-                        <option key={c._id} value={c._id}>{c.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Max Members</label>
-                    <input
-                      required
-                      type="number"
-                      value={formData.maxMembers}
-                      onChange={(e) => setFormData({ ...formData, maxMembers: Number(e.target.value) })}
-                      className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Description</label>
-                  <textarea
-                    required
-                    rows="3"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                    placeholder="Describe the goal of this study group..."
-                  />
-                </div>
-
-                <button type="submit" className="w-full py-5 bg-blue-600 text-white font-black text-lg rounded-[1.5rem] hover:bg-blue-700 shadow-xl shadow-blue-500/20 mt-4 transition-all">
-                  Create Community
-                </button>
-              </form>
-            </motion.div>
+            
+            <SubjectDropdown
+              label="Hub Discipline"
+              required
+              value={formData.subject}
+              onChange={(subject) => setFormData({ ...formData, subject })}
+            />
           </div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              label="Maximum Enrollment"
+              type="number"
+              required
+              value={formData.maxMembers}
+              onChange={(e) => setFormData({ ...formData, maxMembers: Number(e.target.value) })}
+            />
+          </div>
+
+          <Input
+            label="Community Abstract"
+            type="textarea"
+            required
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Define the scope and objectives of this peer group..."
+          />
+
+          <Button type="submit" className="w-full py-5 rounded-[1.5rem] text-lg">
+            Establish Community
+          </Button>
+        </form>
+      </Modal>
+    </div>
   );
 };
 

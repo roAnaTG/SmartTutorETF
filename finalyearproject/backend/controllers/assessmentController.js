@@ -5,22 +5,24 @@ const Progress = require('../models/Progress');
 
 const createAssessment = async (req, res) => {
   try {
-    const { course: courseId, lesson, title, description, type, questions, timeLimit, dueDate } = req.body;
+    const { course: courseId, lesson, title, subject, description, type, questions, timeLimit, dueDate } = req.body;
 
-    // Verify tutor is assigned to this course
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Course not found' 
-      });
-    }
+    // Verify tutor is assigned to this course (only if courseId is provided)
+    if (courseId) {
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Course not found' 
+        });
+      }
 
-    if (course.assignedTutor.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'You are not assigned to this course' 
-      });
+      if (course.assignedTutor.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You are not assigned to this course' 
+        });
+      }
     }
 
     // Calculate total points safely
@@ -33,6 +35,7 @@ const createAssessment = async (req, res) => {
       lesson,
       tutor: req.user._id,
       title,
+      subject,
       description,
       type,
       questions: questions || [],

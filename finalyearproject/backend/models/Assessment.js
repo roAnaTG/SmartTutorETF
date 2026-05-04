@@ -4,7 +4,7 @@ const assessmentSchema = new mongoose.Schema({
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
-    required: true
+    required: false
   },
   lesson: {
     type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +16,10 @@ const assessmentSchema = new mongoose.Schema({
     required: true
   },
   title: {
+    type: String,
+    required: true
+  },
+  subject: {
     type: String,
     required: true
   },

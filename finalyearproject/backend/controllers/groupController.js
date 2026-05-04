@@ -4,28 +4,31 @@ const Notification = require('../models/Notification');
 
 const createGroup = async (req, res) => {
   try {
-    const { course: courseId, name, description, maxMembers } = req.body;
+    const { course: courseId, name, subject, description, maxMembers } = req.body;
 
     // Verify tutor is assigned to this course
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Course not found' 
-      });
-    }
+    if (courseId) {
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Course not found' 
+        });
+      }
 
-    if (course.assignedTutor.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'You are not assigned to this course' 
-      });
+      if (course.assignedTutor.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You are not assigned to this course' 
+        });
+      }
     }
 
     const group = new Group({
       course: courseId,
       tutor: req.user._id,
       name,
+      subject,
       description,
       maxMembers
     });
