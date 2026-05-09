@@ -4,7 +4,11 @@ const resourceSchema = new mongoose.Schema({
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
-    required: true
+    required: false
+  },
+  subject: {
+    type: String,
+    required: false
   },
   lesson: {
     type: mongoose.Schema.Types.ObjectId,

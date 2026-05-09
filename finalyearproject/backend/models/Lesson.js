@@ -25,11 +25,11 @@ const lessonSchema = new mongoose.Schema({
   },
   week: {
     type: Number,
-    required: true
+    default: 1
   },
   order: {
     type: Number,
-    required: true
+    default: 1
   },
   videoUrl: {
     type: String,

@@ -26,7 +26,7 @@ const createLesson = async (req, res) => {
     }
 
     const lesson = new Lesson({
-      course: courseId,
+      course: courseId || undefined,
       tutor: req.user._id,
       title,
       subject,
@@ -43,9 +43,10 @@ const createLesson = async (req, res) => {
     if (resources && resources.length > 0) {
       for (const resource of resources) {
         await Resource.create({
-          course: courseId,
+          course: courseId || undefined,
           lesson: lesson._id,
           uploadedBy: req.user._id,
+          subject: subject,
           ...resource
         });
       }

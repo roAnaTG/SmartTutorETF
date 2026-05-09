@@ -94,8 +94,11 @@ const Assessments = () => {
       toast.error('Please add at least one question');
       return;
     }
+    const submissionData = { ...formData };
+    if (!submissionData.course) delete submissionData.course;
+
     try {
-      await assessmentsAPI.create(formData);
+      await assessmentsAPI.create(submissionData);
       toast.success('Assessment created successfully!');
       setShowModal(false);
       resetForm();

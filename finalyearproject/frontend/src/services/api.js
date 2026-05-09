@@ -37,7 +37,10 @@ export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data),
-  changePassword: (data) => api.put('/auth/password', data)
+  changePassword: (data) => api.put('/auth/password', data),
+  uploadAvatar: (formData) => api.post('/auth/profile/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
 };
 
 // Courses API

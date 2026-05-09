@@ -155,10 +155,38 @@ const changePassword = async (req, res) => {
   }
 };
 
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please upload a file' 
+      });
+    }
+
+    // Save the file path to the user's avatar field
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { avatar: avatarUrl, updatedAt: Date.now() },
+      { new: true }
+    ).select('-password');
+
+    res.json({ 
+      success: true, 
+      message: 'Avatar uploaded successfully', 
+      data: user 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
+  uploadAvatar
 };

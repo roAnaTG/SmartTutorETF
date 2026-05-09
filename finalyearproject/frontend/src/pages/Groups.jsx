@@ -66,8 +66,11 @@ const Groups = () => {
 
   const handleCreateGroup = async (e) => {
     e.preventDefault();
+    const submissionData = { ...formData };
+    if (!submissionData.course) delete submissionData.course;
+
     try {
-      await groupsAPI.create(formData);
+      await groupsAPI.create(submissionData);
       toast.success('Study group created successfully!');
       setShowModal(false);
       setFormData({ name: '', subject: '', description: '', course: '', maxMembers: 10 });

@@ -50,36 +50,40 @@ const paymentSchema = Joi.object({
 });
 
 const lessonSchema = Joi.object({
-  course: Joi.string().required(),
+  course: Joi.string().optional().allow(''),
   title: Joi.string().min(3).required(),
-  description: Joi.string().min(10).required(),
-  week: Joi.number().min(1).required(),
-  order: Joi.number().min(1).required(),
-  videoUrl: Joi.string().uri().optional(),
+  subject: Joi.string().required(),
+  description: Joi.string().min(5).required(),
+  week: Joi.number().min(1).optional(),
+  order: Joi.number().min(1).optional(),
+  videoUrl: Joi.string().uri().allow('').optional(),
   duration: Joi.number().optional()
 });
 
 const sessionSchema = Joi.object({
-  course: Joi.string().required(),
+  course: Joi.string().optional().allow(''),
   title: Joi.string().min(3).required(),
-  description: Joi.string().optional(),
+  subject: Joi.string().required(),
+  description: Joi.string().allow('').optional(),
   type: Joi.string().valid('live', 'peer-to-peer'),
-  scheduledAt: Joi.date().greater('now').required(),
-  duration: Joi.number().min(15).optional(),
-  group: Joi.string().optional()
+  scheduledAt: Joi.date().required(),
+  duration: Joi.number().min(1).optional(),
+  group: Joi.string().optional().allow('')
 });
 
 const groupSchema = Joi.object({
-  course: Joi.string().required(),
+  course: Joi.string().optional().allow(''),
   name: Joi.string().min(3).required(),
-  description: Joi.string().optional(),
-  maxMembers: Joi.number().min(2).max(50).optional()
+  subject: Joi.string().required(),
+  description: Joi.string().allow('').optional(),
+  maxMembers: Joi.number().min(2).max(100).optional()
 });
 
 const assessmentSchema = Joi.object({
-  course: Joi.string().required(),
+  course: Joi.string().optional().allow(''),
   title: Joi.string().min(3).required(),
-  description: Joi.string().min(10).required(),
+  subject: Joi.string().required(),
+  description: Joi.string().min(5).required(),
   type: Joi.string().valid('quiz', 'assignment', 'exam'),
   questions: Joi.array().min(1).items(Joi.object({
     questionText: Joi.string().required(),
@@ -88,8 +92,8 @@ const assessmentSchema = Joi.object({
     correctAnswer: Joi.string().required(),
     points: Joi.number().min(1).optional()
   })).required(),
-  timeLimit: Joi.number().min(5).optional(),
-  dueDate: Joi.date().greater('now').optional()
+  timeLimit: Joi.number().min(1).optional(),
+  dueDate: Joi.date().optional()
 });
 
 module.exports = {

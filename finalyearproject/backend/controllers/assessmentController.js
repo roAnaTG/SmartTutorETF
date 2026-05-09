@@ -31,8 +31,8 @@ const createAssessment = async (req, res) => {
       : req.body.totalPoints || 0;
 
     const assessment = new Assessment({
-      course: courseId,
-      lesson,
+      course: courseId || undefined,
+      lesson: (lesson && lesson !== '') ? lesson : undefined,
       tutor: req.user._id,
       title,
       subject,

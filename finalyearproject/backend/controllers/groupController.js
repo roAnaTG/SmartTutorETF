@@ -25,7 +25,7 @@ const createGroup = async (req, res) => {
     }
 
     const group = new Group({
-      course: courseId,
+      course: courseId || undefined,
       tutor: req.user._id,
       name,
       subject,

@@ -69,8 +69,11 @@ const Lessons = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const submissionData = { ...formData };
+    if (!submissionData.course) delete submissionData.course;
+
     try {
-      await lessonsAPI.create(formData);
+      await lessonsAPI.create(submissionData);
       toast.success('Lesson created successfully!');
       setShowModal(false);
       setFormData({

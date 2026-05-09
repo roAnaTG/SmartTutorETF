@@ -48,9 +48,13 @@ const createSession = async (req, res) => {
     ]);
 
     // Notify enrolled students
-    const students = group 
-      ? (await Group.findById(group).populate('students', 'firstName lastName email')).students
-      : enrolledStudents;
+    let students = [];
+    if (group && group !== '') {
+      const groupData = await Group.findById(group).populate('students', 'firstName lastName email');
+      if (groupData) students = groupData.students;
+    } else {
+      students = enrolledStudents;
+    }
 
     for (const student of students) {
       // Create notification

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { authAPI } from '../services/api';
 import { HiUser, HiPhone, HiIdentification, HiMail, HiSaveAs, HiCamera } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
@@ -18,7 +19,7 @@ const itemVariants = {
 };
 
 const Profile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, updateUserLocal } = useAuth();
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -47,6 +48,27 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size too large (max 5MB)');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+      const response = await authAPI.uploadAvatar(formData);
+      updateUserLocal(response.data); // Update global user state locally
+      toast.success('Avatar updated successfully');
+    } catch (error) {
+      toast.error('Failed to upload avatar');
+    }
+  };
+
   return (
     <motion.div 
       variants={containerVariants}
@@ -64,14 +86,28 @@ const Profile = () => {
         
         <div className="flex flex-col md:flex-row items-center gap-8 mb-10 relative z-10">
           <div className="relative group">
-            <div className="h-32 w-32 rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-blue-500/20">
-              <span className="text-4xl font-black">
-                {user?.firstName?.[0]}{user?.lastName?.[0]}
-              </span>
+            <div className="h-32 w-32 rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-blue-500/20">
+              {user?.avatar ? (
+                <img 
+                  src={`http://localhost:5000${user.avatar}`} 
+                  alt="Profile" 
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-4xl font-black">
+                  {user?.firstName?.[0]}{user?.lastName?.[0]}
+                </span>
+              )}
             </div>
-            <button className="absolute -bottom-2 -right-2 p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:scale-110 transition-transform">
+            <label className="absolute -bottom-2 -right-2 p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:scale-110 transition-transform cursor-pointer">
               <HiCamera className="h-5 w-5 text-blue-600" />
-            </button>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleAvatarChange}
+              />
+            </label>
           </div>
           
           <div className="text-center md:text-left">

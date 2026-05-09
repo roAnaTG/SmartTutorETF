@@ -11,6 +11,7 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Modal from '../components/common/Modal';
+import SubjectDropdown from '../components/common/SubjectDropdown';
 
 const Sessions = () => {
   const [sessions, setSessions] = useState([]);
@@ -67,8 +68,11 @@ const Sessions = () => {
 
   const handleCreateSession = async (e) => {
     e.preventDefault();
+    const submissionData = { ...formData };
+    if (!submissionData.course) delete submissionData.course;
+
     try {
-      await sessionsAPI.create(formData);
+      await sessionsAPI.create(submissionData);
       toast.success('Session scheduled successfully!');
       setShowModal(false);
       resetForm();
