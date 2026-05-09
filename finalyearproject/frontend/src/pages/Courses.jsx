@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { coursesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { HiSearch, HiFilter, HiPlus, HiBookOpen, HiUser, HiTag, HiX, HiClock, HiTrash } from 'react-icons/hi';
+import { HiSearch, HiPlus, HiBookOpen, HiUser, HiClock, HiTrash, HiX, HiArrowRight } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import SubjectDropdown from '../components/common/SubjectDropdown';
 
@@ -11,13 +11,13 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 }
+    transition: { staggerChildren: 0.06 }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }
 };
 
 const Courses = () => {
@@ -99,53 +99,59 @@ const Courses = () => {
     return matchesSearch && matchesCategory;
   });
 
+  const levelColors = {
+    beginner: 'badge-success',
+    intermediate: 'badge-warning',
+    advanced: 'badge-primary'
+  };
+
   return (
     <motion.div 
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-8"
+      className="space-y-6"
     >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <motion.div variants={itemVariants}>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Course Catalog</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Explore our wide range of professional tutoring courses.</p>
-        </motion.div>
+      {/* Header */}
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Course Catalog</h1>
+          <p className="text-muted-foreground mt-1">
+            Explore {courses.length} courses across various subjects
+          </p>
+        </div>
         {user?.role === 'manager' && (
-          <motion.button
-            variants={itemVariants}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25"
+            className="btn-primary"
           >
-            <HiPlus className="h-5 w-5 mr-2" />
+            <HiPlus className="h-4 w-4" />
             Create Course
-          </motion.button>
+          </button>
         )}
-      </div>
+      </motion.div>
 
-      {/* Search and Filter Bar */}
-      <motion.div variants={itemVariants} className="flex flex-col md:flex-row gap-4">
+      {/* Search and Filters */}
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <HiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+          <HiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <input
             type="text"
-            placeholder="Search by title or topic..."
+            placeholder="Search courses..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-900 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 shadow-sm text-slate-900 dark:text-white"
+            className="input pl-11"
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setFilterCategory(cat)}
-              className={`px-5 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap ${
+              className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                 filterCategory === cat
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm'
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-muted text-muted-foreground hover:text-foreground'
               }`}
             >
               {cat}
@@ -156,63 +162,96 @@ const Courses = () => {
 
       {/* Course Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-80 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-3xl" />
+            <div key={i} className="card h-80 animate-pulse">
+              <div className="h-40 bg-muted rounded-t-2xl" />
+              <div className="p-5 space-y-3">
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-3 bg-muted rounded w-1/2" />
+                <div className="h-3 bg-muted rounded w-full" />
+              </div>
+            </div>
           ))}
         </div>
+      ) : filteredCourses.length === 0 ? (
+        <div className="card p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+            <HiBookOpen className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground">No courses found</h3>
+          <p className="text-muted-foreground mt-1">Try adjusting your search or filter criteria</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence mode="popLayout">
             {filteredCourses.map((course) => (
               <motion.div
                 key={course._id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                whileHover={{ y: -10 }}
-                className="group glass rounded-3xl overflow-hidden border-0 shadow-sm flex flex-col"
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="card-interactive group flex flex-col overflow-hidden"
               >
-                <div className="h-48 bg-gradient-to-br from-indigo-500 to-blue-700 relative p-6">
-                  <div className="absolute top-4 right-4 px-3 py-1 bg-white/20 backdrop-blur-md rounded-xl text-[10px] font-bold text-white uppercase tracking-widest border border-white/10">
-                    {course.level}
+                {/* Course Header */}
+                <div className="h-36 bg-gradient-to-br from-accent to-blue-700 relative p-5 flex flex-col justify-between">
+                  <div className="flex justify-between items-start">
+                    <span className="badge bg-white/20 text-white backdrop-blur-sm border-0">
+                      {course.category}
+                    </span>
+                    <span className={`badge ${levelColors[course.level] || 'badge-muted'} capitalize`}>
+                      {course.level}
+                    </span>
                   </div>
-                  <HiBookOpen className="absolute bottom-4 right-4 h-16 w-16 text-white/10 group-hover:scale-110 transition-transform" />
-                  <span className="inline-block px-3 py-1 bg-white text-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                    {course.category}
-                  </span>
+                  <HiBookOpen className="absolute bottom-3 right-3 h-20 w-20 text-white/10" />
                 </div>
-                <div className="p-6 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors leading-tight">
+                
+                {/* Course Content */}
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="text-lg font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-2">
                     {course.title}
                   </h3>
-                  <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
-                    <span className="flex items-center gap-1"><HiClock /> {course.duration}h</span>
-                    <span className="flex items-center gap-1"><HiUser /> {course.enrolledStudents?.length || 0} enrolled</span>
+                  
+                  <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <HiClock className="h-4 w-4" />
+                      {course.duration}h
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <HiUser className="h-4 w-4" />
+                      {course.enrolledStudents?.length || 0}
+                    </span>
                   </div>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mt-4 line-clamp-2">
+                  
+                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2 flex-1">
                     {course.description}
                   </p>
-                  <div className="mt-auto pt-6 flex justify-between items-center gap-2">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                      <span className="text-blue-600 text-sm">$</span>{course.price}
+                  
+                  {/* Footer */}
+                  <div className="flex justify-between items-center mt-5 pt-4 border-t border-border">
+                    <div className="text-xl font-bold text-foreground">
+                      <span className="text-sm text-muted-foreground">$</span>
+                      {course.price}
                     </div>
                     <div className="flex gap-2">
                       {user?.role === 'manager' && (
                         <button
-                          onClick={() => handleDelete(course._id)}
-                          className="p-2.5 bg-rose-500/10 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm"
-                          title="Delete Course"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDelete(course._id);
+                          }}
+                          className="p-2.5 text-destructive bg-destructive/10 rounded-xl hover:bg-destructive hover:text-destructive-foreground transition-all"
                         >
                           <HiTrash className="h-4 w-4" />
                         </button>
                       )}
                       <Link
                         to={`/courses/${course._id}`}
-                        className="px-5 py-2.5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-xs font-bold rounded-xl hover:bg-blue-600 dark:hover:bg-blue-50 transition-all whitespace-nowrap"
+                        className="btn-primary py-2.5 px-4 text-sm"
                       >
                         View Details
+                        <HiArrowRight className="h-4 w-4" />
                       </Link>
                     </div>
                   </div>
@@ -232,95 +271,113 @@ const Courses = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowCreateModal(false)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden"
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-lg card-elevated overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Course</h2>
+              <div className="p-5 border-b border-border flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-foreground">Create New Course</h2>
                 <button 
                   onClick={() => setShowCreateModal(false)}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
                 >
-                  <HiX className="h-5 w-5 text-slate-500" />
+                  <HiX className="h-5 w-5 text-muted-foreground" />
                 </button>
               </div>
-              <form onSubmit={handleCreateCourse} className="p-6 space-y-4">
+              <form onSubmit={handleCreateCourse} className="p-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Course Title</label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="input"
+                    placeholder="e.g. Advanced Mathematics"
+                  />
+                </div>
+                
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Course Title</label>
-                    <input
-                      required
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                      placeholder="e.g. Advanced Mathematics"
-                    />
-                  </div>
-                  <div className="col-span-2">
+                  <div>
                     <SubjectDropdown
-                      label="Course Discipline"
+                      label="Category"
                       required
                       value={formData.category}
                       onChange={(category) => setFormData({ ...formData, category })}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Level</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Level</label>
                     <select
                       value={formData.level}
                       onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white appearance-none"
+                      className="input"
                     >
                       <option value="beginner">Beginner</option>
                       <option value="intermediate">Intermediate</option>
                       <option value="advanced">Advanced</option>
                     </select>
                   </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Price ($)</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Price ($)</label>
                     <input
                       required
                       type="number"
+                      min="0"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+                      className="input"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Duration (hrs)</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Duration (hours)</label>
                     <input
                       required
                       type="number"
+                      min="0"
                       value={formData.duration}
                       onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+                      className="input"
                     />
                   </div>
                 </div>
+                
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Description</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Description</label>
                   <textarea
                     required
                     rows="3"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                    placeholder="Provide a brief overview of the course..."
+                    className="input resize-none"
+                    placeholder="Describe what students will learn..."
                   />
                 </div>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 mt-4 disabled:opacity-50"
-                >
-                  {creating ? 'Creating...' : 'Create Course'}
-                </button>
+                
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="btn-secondary flex-1"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={creating}
+                    className="btn-primary flex-1"
+                  >
+                    {creating ? 'Creating...' : 'Create Course'}
+                  </button>
+                </div>
               </form>
             </motion.div>
           </div>

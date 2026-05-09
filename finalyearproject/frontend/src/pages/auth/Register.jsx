@@ -53,24 +53,24 @@ const Register = () => {
   };
 
   return (
-    <div className="p-8 sm:p-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl max-h-[85vh] overflow-y-auto custom-scrollbar">
+    <div className="p-8 sm:p-10 bg-card max-h-[80vh] overflow-y-auto custom-scrollbar">
       <div className="mb-8">
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-foreground">
           Create Account
         </h2>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
-          Join thousands of learners and educators worldwide.
+        <p className="text-muted-foreground text-sm mt-1">
+          Join thousands of learners worldwide
         </p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+            <label className="block text-sm font-medium text-foreground">
               First Name
             </label>
-            <div className="relative group">
-              <HiUser className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+            <div className="relative">
+              <HiUser className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
                 name="firstName"
                 type="text"
@@ -78,16 +78,16 @@ const Register = () => {
                 value={formData.firstName}
                 onChange={handleChange}
                 placeholder="John"
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all placeholder:text-slate-400 font-medium"
+                className="input pl-12"
               />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+            <label className="block text-sm font-medium text-foreground">
               Last Name
             </label>
-            <div className="relative group">
-              <HiUser className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+            <div className="relative">
+              <HiUser className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
                 name="lastName"
                 type="text"
@@ -95,18 +95,18 @@ const Register = () => {
                 value={formData.lastName}
                 onChange={handleChange}
                 placeholder="Doe"
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all placeholder:text-slate-400 font-medium"
+                className="input pl-12"
               />
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+          <label className="block text-sm font-medium text-foreground">
             Email Address
           </label>
-          <div className="relative group">
-            <HiMail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+          <div className="relative">
+            <HiMail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <input
               name="email"
               type="email"
@@ -114,39 +114,39 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="john@example.com"
-              className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all placeholder:text-slate-400 font-medium"
+              className="input pl-12"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+            <label className="block text-sm font-medium text-foreground">
               Phone (Optional)
             </label>
-            <div className="relative group">
-              <HiPhone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+            <div className="relative">
+              <HiPhone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
                 name="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+123..."
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all placeholder:text-slate-400 font-medium"
+                className="input pl-12"
               />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+            <label className="block text-sm font-medium text-foreground">
               Role
             </label>
-            <div className="relative group">
-              <HiAcademicCap className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+            <div className="relative">
+              <HiAcademicCap className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <select
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all appearance-none font-medium"
+                className="input pl-12 appearance-none"
               >
                 <option value="student">Student</option>
                 <option value="tutor">Tutor</option>
@@ -156,37 +156,37 @@ const Register = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+          <label className="block text-sm font-medium text-foreground">
             Password
           </label>
-          <div className="relative group">
-            <HiLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+          <div className="relative">
+            <HiLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <input
               name="password"
               type="password"
               required
               value={formData.password}
               onChange={handleChange}
-              placeholder="••••••••"
-              className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all placeholder:text-slate-400 font-medium"
+              placeholder="At least 6 characters"
+              className="input pl-12"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+          <label className="block text-sm font-medium text-foreground">
             Confirm Password
           </label>
-          <div className="relative group">
-            <HiLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+          <div className="relative">
+            <HiLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <input
               name="confirmPassword"
               type="password"
               required
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="••••••••"
-              className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all placeholder:text-slate-400 font-medium"
+              placeholder="Confirm your password"
+              className="input pl-12"
             />
           </div>
         </div>
@@ -194,24 +194,25 @@ const Register = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-4"
+          className="btn-primary w-full mt-2"
         >
           {loading ? (
-            <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="h-5 w-5 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin" />
           ) : (
             <>
-              Create Account <HiArrowRight className="h-5 w-5" />
+              Create Account
+              <HiArrowRight className="h-4 w-4" />
             </>
           )}
         </button>
       </form>
 
-      <div className="mt-10 text-center pb-2">
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-          Already a member? {' '}
+      <div className="mt-8 text-center">
+        <p className="text-sm text-muted-foreground">
+          Already have an account?{' '}
           <Link
             to="/login"
-            className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
+            className="font-semibold text-accent hover:underline"
           >
             Sign in
           </Link>

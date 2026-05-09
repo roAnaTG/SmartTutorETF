@@ -13,7 +13,7 @@ import {
   HiChartBar,
   HiUsers,
   HiLogout,
-  HiChevronRight
+  HiX
 } from 'react-icons/hi';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -26,7 +26,6 @@ const Sidebar = ({ isOpen, onClose }) => {
   };
 
   const getNavItems = () => {
-    // ... existing logic ...
     const commonItems = [
       { name: 'Dashboard', path: '/dashboard', icon: HiHome },
       { name: 'Courses', path: '/courses', icon: HiBookOpen },
@@ -72,95 +71,103 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const navItems = getNavItems();
 
-  return (
-    <AnimatePresence>
-      {(isOpen || window.innerWidth >= 1024) && (
-        <motion.div 
-          initial={{ x: -300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -300, opacity: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col p-4 transition-all duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-        >
-          <div className="flex flex-col flex-grow glass dark:bg-slate-900/80 rounded-[2.5rem] border-0 shadow-2xl overflow-hidden backdrop-blur-xl">
-            <div className="px-8 pt-10 pb-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30">
-                  <HiAcademicCap className="h-6 w-6 text-white" />
-                </div>
-                <h1 className="text-xl font-black tracking-tighter text-slate-900 dark:text-white">
-                  SmartTutor<span className="text-blue-600">ET</span>
-                </h1>
-              </div>
-              <button onClick={onClose} className="p-2 lg:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <HiChevronRight className="h-6 w-6 rotate-180" />
-              </button>
-            </div>
-            
-            <div className="mt-6 flex-1 flex flex-col px-4 overflow-y-auto custom-scrollbar">
-              <nav className="flex-1 space-y-2 pb-8">
-                {navItems.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => window.innerWidth < 1024 && onClose()}
-                    className={({ isActive }) =>
-                      `group relative flex items-center px-4 py-3.5 text-sm font-bold rounded-2xl transition-all ${
-                        isActive
-                          ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/25'
-                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <item.icon className={`mr-3 h-5 w-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600 transition-colors'}`} />
-                        <span className="flex-1">{item.name}</span>
-                        {isActive && (
-                          <motion.div 
-                            layoutId="activeTab"
-                            className="absolute right-4"
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                          >
-                            <HiChevronRight className="h-4 w-4" />
-                          </motion.div>
-                        )}
-                      </>
-                    )}
-                  </NavLink>
-                ))}
-              </nav>
-            </div>
-
-            <div className="p-4 mt-auto">
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700/50">
-                <div className="flex items-center mb-4">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
-                    {user?.firstName?.[0]}{user?.lastName?.[0]}
-                  </div>
-                  <div className="ml-3 overflow-hidden">
-                    <p className="text-xs font-black text-slate-900 dark:text-white truncate">
-                      {user?.firstName} {user?.lastName}
-                    </p>
-                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-0.5">
-                      {user?.role}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-black text-rose-600 bg-rose-500/10 hover:bg-rose-600 hover:text-white rounded-xl transition-all uppercase tracking-widest"
-                >
-                  <HiLogout className="h-4 w-4" />
-                  Sign Out
-                </button>
-              </div>
-            </div>
+  const sidebarContent = (
+    <div className="flex flex-col h-full bg-card border-r border-border">
+      {/* Logo */}
+      <div className="h-16 flex items-center justify-between px-6 border-b border-border">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+            <HiAcademicCap className="h-5 w-5 text-accent-foreground" />
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <span className="text-lg font-bold text-foreground tracking-tight">
+            SmartTutor
+          </span>
+        </div>
+        <button 
+          onClick={onClose} 
+          className="p-2 lg:hidden text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+        >
+          <HiX className="h-5 w-5" />
+        </button>
+      </div>
+      
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            onClick={() => window.innerWidth < 1024 && onClose()}
+            className={({ isActive }) =>
+              `group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
+                isActive
+                  ? 'bg-accent text-accent-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <item.icon className={`h-5 w-5 flex-shrink-0 ${
+                  isActive ? 'text-accent-foreground' : 'text-muted-foreground group-hover:text-foreground'
+                } transition-colors`} />
+                <span>{item.name}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* User Section */}
+      <div className="p-4 border-t border-border">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+            <span className="text-sm font-semibold text-accent">
+              {user?.firstName?.[0]}{user?.lastName?.[0]}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p className="text-xs text-muted-foreground capitalize">
+              {user?.role}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-destructive bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground rounded-xl transition-all duration-200"
+        >
+          <HiLogout className="h-4 w-4" />
+          Sign Out
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block fixed inset-y-0 left-0 w-[280px] z-30">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.aside
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="fixed inset-y-0 left-0 w-[280px] z-50 lg:hidden"
+          >
+            {sidebarContent}
+          </motion.aside>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
